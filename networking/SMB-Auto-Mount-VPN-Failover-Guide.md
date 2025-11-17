@@ -1071,11 +1071,3 @@ Developed as a solution for automatic home server mounting with remote access fa
 **Tested On**: Debian 13 (trixie)
 
 ---
-📝 License
-
-This guide is provided as-is for educational purposes. Always follow security best practices and consult official Cloudflare documentation for the most up-to-date information.
-
-## 🤝 Contributing
-
-Feel free to submit issues or pull requests if you find any errors or have suggestions for improvements.
-
