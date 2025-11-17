@@ -36,8 +36,9 @@ Each guide is written as I solved the problem - straightforward, tested, and wit
 ```
 debian-trixie/
 │
-├── networking/          # Network configs that actually work
-│   └── cloudflare-warp-ssh-tunnel.md
+├── networking/         
+│   └── cloudflare-warp-ssh-tunnel.md         # VPS Secure Shell Access via Cloudflare WARP
+│   └── SMB-Auto-Mount-VPN-Failover-Guide.md  # Automatic SMB/CIFS Mount with VPN Failover
 ├── services/           # Self-hosted service setups
 ├── security/           # Hardening without locking yourself out
 └── desktop/            # Desktop environment fixes
