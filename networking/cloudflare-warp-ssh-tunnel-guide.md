@@ -1,7 +1,4 @@
-## VPS Secure Shell Access via Cloudflare Warp Debian 13 (trixie)
-
-### Without Public or Private Hostnames
-
+## VPS Secure Shell Access via Cloudflare Warp Debian 13 (trixie)<br>
 ##### **Prerequisites**
 
 - **Cloudflare Zero Trust account** created and configured.
@@ -14,11 +11,10 @@
 
 ---
 
-##### Cloudflare Split Tunnels
+### Cloudflare Split Tunnels
+> Ensure traffic routes correctly through WARP + Tunnel.
 
-Ensure traffic routes correctly through WARP + Tunnel.
-
-###### Include Mode
+##### Include Mode
 
 - **Only specified IP ranges or domains are routed through WARP.**
 
@@ -28,7 +24,7 @@ Ensure traffic routes correctly through WARP + Tunnel.
 
 - Example: include `10.0.0.0/24` → only internal systems route through Cloudflare.
 
-###### Exclude Mode
+##### Exclude Mode
 
 - **All traffic goes through WARP by default**, except for the IP ranges or domains you exclude.
 
@@ -38,11 +34,13 @@ Ensure traffic routes correctly through WARP + Tunnel.
 
 - Example: exclude `192.168.1.0/24` so local devices remain accessible.
 
----
+--- 
+<br>
 
 ### Install Latest Cloudflared Version on Target
 
-Login to target (ssh root@target) Leave the session open as a fail-safe until the setup is complete.
+> Login to target (ssh root@target) Leave the session open as a fail-safe until the setup is complete.
+<br>
 
 ```bash
 wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
@@ -51,18 +49,17 @@ wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudfla
 ```bash
 dpkg -i cloudflared-linux-amd64.deb
 ```
+<br>
 
 
-
-Verify Install 
+#### Verify Install and Login
 
 ```bash
 cloudflared --version
 ```
 
-> cloudflared version 2025.11.1 (built 2025-11-07-16:59 UTC)
-
-
+> cloudflared version 2025.11.1 (built 2025-11-07-16:59 UTC)  
+<br>
 
 ```bash
 cloudflared login 
@@ -88,7 +85,7 @@ cloudflared login
 > > If you wish to copy your credentials to a server, they have been saved to:
 > > /root/.cloudflared/cert.pem
 
-
+<br>
 
 Create a tunnel, Replace [TUNNEL_NAME] with your desired name. i.e my-cloud
 
@@ -98,7 +95,7 @@ cloudflared tunnel create [TUNNEL_NAME]
 
 Note the created tunnel ID, You will need it for creating config.
 
-###### Expected Output of tunnel create command:
+##### Expected Output of tunnel create command:
 
 > Tunnel credentials written to /root/.cloudflared/[TUNNEL-ID].json. cloudflared chose this file based on where your origin certificate was found. Keep this file secret. To revoke these credentials, delete the tunnel. 
 > 
@@ -113,16 +110,16 @@ mkdir -p /etc/cloudflared
 nano /etc/cloudflared/config.yml
 ```
 
-###### Config File Contents
+##### Config File Contents
 
 ----------------------------------------------------
-
-> tunnel: [TUNNEL-ID]
-> credentials-file: /root/.cloudflared/[TUNNEL-ID].json
-> 
-> ingress:
->   - service: http_status:404
-
+```
+ tunnel: [TUNNEL-ID]
+ credentials-file: /root/.cloudflared/[TUNNEL-ID].json
+ 
+ ingress:
+   - service: http_status:404
+```
 ----------------------------------------------------
 
 Save and Exit.
@@ -135,12 +132,11 @@ Save and Exit.
 cloudflared service install
 ```
 
-###### Expected Output if Successful
+##### Expected Output if Successful
 
-> 2025-11-16T16:53:27Z INF Using Systemd
+> 2025-11-16T16:53:27Z INF Using Systemd<br>
 > 2025-11-16T16:53:28Z INF Linux service for cloudflared installed successfully
 
-##### 
 
 ##### Create a route for the tunnel
 
@@ -166,16 +162,16 @@ nano /etc/netplan/50-cloud-init.yaml
 
 ---
 
-> network:
->   version: 2
->   ethernets:
->     all-en:
->       match:
->         name: "en*"
->       dhcp4: true
->       dhcp6: true
->       <mark>addresses:</mark>
->         <mark>- 10.0.0.1/32</mark>
+ network:<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;version: 2<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;ethernets:<br>
+     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;all-en:<br>
+       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;match:<br>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: "en*"<br>
+       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dhcp4: true<br>
+       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dhcp6: true<br>
+       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<mark>addresses:</mark><br>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<mark>- 10.0.0.1/32</mark><br>
 
 ------------------------------------
 
@@ -195,22 +191,22 @@ ip addr show
 
 ---
 
-> 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
->     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
->     inet 127.0.0.1/8 scope host lo
->        valid_lft forever preferred_lft forever
->     inet6 ::1/128 scope host noprefixroute 
->        valid_lft forever preferred_lft forever
-> 2: ens6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
->     link/ether 02:01:f2:0c:a8:ed brd ff:ff:ff:ff:ff:ff
->     altname enp0s6
->     altname enx0201f20ca8ed
->     inet <mark>10.0.0.1/32</mark> scope global ens6
->        valid_lft forever preferred_lft forever
->     inet 87.106.36.9/32 metric 100 scope global dynamic ens6
->        valid_lft 592sec preferred_lft 592sec
->     inet6 fe80::1:f2ff:fe0c:a8ed/64 scope link proto kernel_ll 
->        valid_lft forever preferred_lft forever
+ 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000<br>
+     &nbsp;&nbsp;&nbsp;&nbsp;link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00<br>
+     &nbsp;&nbsp;&nbsp;&nbsp;inet 127.0.0.1/8 scope host lo<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;valid_lft forever preferred_lft forever<br>
+     &nbsp;&nbsp;&nbsp;&nbsp;inet6 ::1/128 scope host noprefixroute<br> 
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;valid_lft forever preferred_lft forever<br>
+ 2: ens6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000<br>
+     &nbsp;&nbsp;&nbsp;&nbsp;link/ether 02:01:f2:0c:a8:ed brd ff:ff:ff:ff:ff:ff<br>
+     &nbsp;&nbsp;&nbsp;&nbsp;altname enp0s6<br>
+     &nbsp;&nbsp;&nbsp;&nbsp;altname enx0201f20ca8ed<br>
+     &nbsp;&nbsp;&nbsp;&nbsp;inet <mark>10.0.0.1/32</mark> scope global ens6<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;valid_lft forever preferred_lft forever<br>
+     &nbsp;&nbsp;&nbsp;&nbsp;inet 87.106.36.9/32 metric 100 scope global dynamic ens6<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;valid_lft 592sec preferred_lft 592sec<br>
+     &nbsp;&nbsp;&nbsp;&nbsp;inet6 fe80::1:f2ff:fe0c:a8ed/64 scope link proto kernel_ll<br> 
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;valid_lft forever preferred_lft forever<br>
 
 ---
 
@@ -274,16 +270,16 @@ ssh root@10.0.0.1
 ```
 
 On successful login.
-
-> Linux master-database 6.12.57+deb13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.57-1 ($DATE$) x86_64
-> The programs included with the Debian GNU/Linux system are free software;
-> the exact distribution terms for each program are described in the
-> individual files in /usr/share/doc/*/copyright.
-> Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
-> permitted by applicable law.
-> 
-> root@10.0.0.1:~#
-
+```
+ Linux master-database 6.12.57+deb13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.57-1 ($DATE$) x86_64
+ The programs included with the Debian GNU/Linux system are free software;
+ the exact distribution terms for each program are described in the
+ individual files in /usr/share/doc/*/copyright.
+ Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+ permitted by applicable law.
+ 
+ root@10.0.0.1:~#
+```
 
 
 5. **Additional Security (optional)**
@@ -295,10 +291,10 @@ nano /etc/ssh/sshd_config
 ```
 
 Adjust the SSH `ListenAddress` setting to restrict which interface the SSH daemon will bind to.
-
-> #ListenAddress 0.0.0.0
-> ListenAddress 10.0.0.1
-
+```
+ #ListenAddress 0.0.0.0
+ ListenAddress 10.0.0.1
+```
 Restart SSH
 
 ```
@@ -317,11 +313,11 @@ On Success you can now close public facing port for ssh access (optional).
 nano ~/.ssh/config
 ```
 
-> #Name the Connection
+> #Name the Connection<br>
 > 
-> Host connection-Name
->     Hostname 10.0.0.1
->     User root
+> Host connection-Name<br>
+>     Hostname 10.0.0.1<br>
+>     User root<br>
 
 Save and Exit
 
@@ -335,10 +331,10 @@ ssh connection-name
 
 On successful login
 
-> Linux master-database 6.12.57+deb13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.57-1 (DATE) x86_64
-> The programs included with the Debian GNU/Linux system are free software;
-> the exact distribution terms for each program are described in the
-> individual files in /usr/share/doc/*/copyright.
-> Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
-> permitted by applicable law.
+> Linux master-database 6.12.57+deb13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.57-1 (DATE) x86_64<br>
+> The programs included with the Debian GNU/Linux system are free software;<br>
+> the exact distribution terms for each program are described in the<br>
+> individual files in /usr/share/doc/*/copyright.<br>
+> Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent<br>
+> permitted by applicable law.<br>
 > root@connection-name:~#
