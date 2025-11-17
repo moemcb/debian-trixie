@@ -99,7 +99,9 @@ cloudflared tunnel create [TUNNEL_NAME]
 #### Expected Output:
 
 ```
-Tunnel credentials written to /root/.cloudflared/[TUNNEL-ID].json. cloudflared chose this file based on where your origin certificate was found. Keep this file secret. To revoke these credentials, delete the tunnel.
+Tunnel credentials written to /root/.cloudflared/[TUNNEL-ID].json. 
+Cloudflared chose this file based on where your origin certificate was found. 
+Keep this file secret. To revoke these credentials, delete the tunnel.
 
 Created tunnel [TUNNEL_NAME] with id [TUNNEL-ID]  <-- Note this generated ID.
 ```
