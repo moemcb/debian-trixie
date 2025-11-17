@@ -1068,16 +1068,14 @@ Developed as a solution for automatic home server mounting with remote access fa
 
 **Version**: 1.0  
 **Last Updated**: November 2025  
-**Tested On**: Debian 12/13, Ubuntu 22.04/24.04
+**Tested On**: Debian 13 (trixie)
 
 ---
+📝 License
 
-## Support
+This guide is provided as-is for educational purposes. Always follow security best practices and consult official Cloudflare documentation for the most up-to-date information.
 
-- 📖 [Documentation](https://github.com/YOUR_REPO/wiki)
-- 🐛 [Issue Tracker](https://github.com/YOUR_REPO/issues)
-- 💬 [Discussions](https://github.com/YOUR_REPO/discussions)
+## 🤝 Contributing
 
----
+Feel free to submit issues or pull requests if you find any errors or have suggestions for improvements.
 
-**⭐ Star this repository if you find it useful!**
