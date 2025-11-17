@@ -175,8 +175,8 @@ network:
         name: "en*"
       dhcp4: true
       dhcp6: true
-      addresses:
-        - 10.0.0.1/32
+      addresses: # ← Add if not present
+        - 10.0.0.1/32 # ← Your CIDR IP 
 ```
 
 Save and Exit.
@@ -195,7 +195,7 @@ ip addr show
 
 #### Expected Output:
 
-```
+```yaml
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
     inet 127.0.0.1/8 scope host lo
@@ -206,9 +206,9 @@ ip addr show
     link/ether 02:01:f2:0c:a8:ed brd ff:ff:ff:ff:ff:ff
     altname enp0s6
     altname enx0201f20ca8ed
-    inet 10.0.0.1/32 scope global ens6  <-- Your CIDR IP
+    inet 10.0.0.1/32 scope global ens6  # ← Your CIDR IP
        valid_lft forever preferred_lft forever
-    inet 87.106.36.9/32 metric 100 scope global dynamic ens6
+    inet 87.150.36.22/32 metric 100 scope global dynamic ens6
        valid_lft 592sec preferred_lft 592sec
     inet6 fe80::1:f2ff:fe0c:a8ed/64 scope link proto kernel_ll 
        valid_lft forever preferred_lft forever
@@ -267,7 +267,7 @@ ssh root@10.0.0.1
 #### On successful login:
 
 ```
-Linux master-database 6.12.57+deb13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.57-1 ($DATE$) x86_64
+Linux 6.12.57+deb13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.57-1 ($DATE$) x86_64
 The programs included with the Debian GNU/Linux system are free software;
 the exact distribution terms for each program are described in the
 individual files in /usr/share/doc/*/copyright.
@@ -330,7 +330,7 @@ ssh connection-name
 #### On successful login:
 
 ```
-Linux master-database 6.12.57+deb13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.57-1 (DATE) x86_64
+Linux 6.12.57+deb13-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.57-1 (DATE) x86_64
 The programs included with the Debian GNU/Linux system are free software;
 the exact distribution terms for each program are described in the
 individual files in /usr/share/doc/*/copyright.
