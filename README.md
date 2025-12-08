@@ -37,8 +37,9 @@ Each guide is written as I solved the problem - straightforward, tested, and wit
 debian-trixie/
 │
 ├── networking/         
-│   └── cloudflare-warp-ssh-tunnel.md         # VPS Secure Shell Access via Cloudflare WARP
-│   └── SMB-Auto-Mount-VPN-Failover-Guide.md  # Automatic SMB/CIFS Mount with VPN Failover
+│   └── cloudflare-warp-ssh-tunnel.md              # VPS Secure Shell Access via Cloudflare WARP
+│   └── SMB-Auto-Mount-VPN-Failover-Guide.md       # Automatic SMB/CIFS Mount with VPN Failover
+│   └── warp-cli-setup-with-cloudflared-tunnel.md  # Warp CLI and Cloudflared Tunnel on same device.
 ├── services/           # Self-hosted service setups
 ├── security/           # Hardening without locking yourself out
 └── desktop/            # Desktop environment fixes
