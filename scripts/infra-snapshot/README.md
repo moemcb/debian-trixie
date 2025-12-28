@@ -157,7 +157,8 @@ Persistent=true
 [Install]
 WantedBy=timers.target
 ```
+---
 
-## License
+## 📜 License
 
-MIT
+MIT License - Use anything here however it helps you.
