@@ -17,36 +17,6 @@ This is my hobby page where I share solutions to problems I've actually encounte
 
 ---
 
-## 📚 What's Inside
-
-Solutions I've worked out for:
-
-- 🔐 **Remote Access** - Getting SSH to work securely without the usual headaches
-- 🛡️ **Security Hardening** - Practical steps that actually made a difference
-- 🌐 **Networking & Cloudflare** - Making services accessible (when I want them to be)
-- 🐳 **Self-Hosting** - Running my own services without breaking everything
-- 🖥️ **Desktop Tweaks** - Making Debian work the way I need it to
-
-Each guide is written as I solved the problem - straightforward, tested, and without fluff.
-
----
-
-## 📁 How It's Organized
-
-```
-debian-trixie/
-│
-├── networking/         
-│   └── cloudflare-warp-ssh-tunnel.md              # VPS Secure Shell Access via Cloudflare WARP
-│   └── SMB-Auto-Mount-VPN-Failover-Guide.md       # Automatic SMB/CIFS Mount with VPN Failover
-│   └── warp-cli-setup-with-cloudflared-tunnel.md  # Warp CLI and Cloudflared Tunnel on same device.
-├── services/           # Self-hosted service setups
-├── security/           # Hardening without locking yourself out
-└── desktop/            # Desktop environment fixes
-```
-
----
-
 ## 💭 A Note on These Guides
 
 - ✅ **Tested** - Everything here worked on my systems
@@ -78,7 +48,7 @@ If any of these guides saved you time or solved your problem, a star would be ap
 
 ## 📜 License
 
-MIT License - Use anything here however it helps you.
+MIT License - see LICENSE.md.
 
 ---
 
