@@ -26,7 +26,7 @@ apt install jq iproute2 util-linux iproute2
 ## Installation
 
 ```bash
-curl -o /usr/local/bin/infra-snapshot https://git.moe.net/moe/infra-snapshot/raw/branch/main/infra-snapshot.sh
+curl -o /usr/local/bin/infra-snapshot https://github.com/moemcb/debian-trixie/raw/branch/main/scripts/infra-snapshot/infra-snapshot
 chmod +x /usr/local/bin/infra-snapshot
 ```
 
