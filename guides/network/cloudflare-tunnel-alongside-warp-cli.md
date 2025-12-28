@@ -1,8 +1,14 @@
 # Setting Up WARP-CLI Alongside Cloudflared Tunnel
 
 **OS:** Debian Trixie (13)
+
+
 **Prerequisite:** Cloudflared tunnel already installed and working as systemd service
+
+
 **Goal:** Add WARP-CLI for outbound SSH tunneling without breaking cloudflared
+
+
 
 ---
 
