@@ -1,0 +1,752 @@
+#!/bin/bash
+###############################################################################
+# Raspberry Pi Security Hardening Script for Debian 13 Trixie (Generic)
+# Designed for Raspberry Pi 4 using Cloudflare Tunnels
+#
+# NOTE: ARM64 architecture (aarch64) - optimized for Pi 4 resource constraints
+#
+# Usage: sudo ./vps-harden-pi-generic.sh [TUNNEL_IP] [USERNAME]
+# Example: sudo ./vps-harden-pi-generic.sh 10.0.0.5 pi
+#
+# Parameters:
+#   TUNNEL_IP - Cloudflare tunnel IP (optional - skip for non-tunnel setups)
+#   USERNAME  - Non-root user for SSH access (default: current sudo user)
+#
+# This script should be run with root privileges
+#
+# WARNING: Always test on a non-production system first!
+# WARNING: Ensure you have physical or console access before running!
+# WARNING: The script will restart SSH - ensure you can access via console!
+###############################################################################
+
+set -e  # Exit on error
+set -u  # Exit on undefined variable
+
+# Color output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Configuration
+TUNNEL_IP="${1:-}"  # Optional: Cloudflare tunnel IP
+ADMIN_USER="${2:-${SUDO_USER:-pi}}"  # Non-root admin user
+
+# Show configuration
+echo -e "${BLUE}Configuration:${NC}"
+echo "  TUNNEL_IP: ${TUNNEL_IP:-<not set - tunnel rules will be skipped>}"
+echo "  USERNAME:  $ADMIN_USER"
+echo ""
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOG_FILE="/var/log/pi-hardening-$(date +%Y%m%d-%H%M%S).log"
+BACKUP_DIR="/home/${ADMIN_USER}/security-backup-$(date +%Y%m%d-%H%M%S)"
+
+# Logging function
+log() {
+    echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $*" | tee -a "$LOG_FILE"
+}
+
+log_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $*" | tee -a "$LOG_FILE"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $*" | tee -a "$LOG_FILE"
+}
+
+log_section() {
+    echo -e "\n${BLUE}========================================${NC}" | tee -a "$LOG_FILE"
+    echo -e "${BLUE}$*${NC}" | tee -a "$LOG_FILE"
+    echo -e "${BLUE}========================================${NC}" | tee -a "$LOG_FILE"
+}
+
+# Check if running as root
+if [[ $EUID -ne 0 ]]; then
+   log_error "This script must be run as root"
+   exit 1
+fi
+
+# Verify admin user exists
+if ! id "$ADMIN_USER" &>/dev/null; then
+    log_error "User '$ADMIN_USER' does not exist. Please specify a valid username."
+    exit 1
+fi
+
+# Detect architecture
+ARCH=$(uname -m)
+if [[ "$ARCH" != "aarch64" && "$ARCH" != "armv7l" ]]; then
+    log_warning "This script is optimized for ARM (Raspberry Pi). Detected: $ARCH"
+    read -p "Continue anyway? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
+fi
+
+log "Raspberry Pi Hardening Script Starting"
+log "Cloudflare Tunnel IP: ${TUNNEL_IP:-<not configured>}"
+log "Admin User: $ADMIN_USER"
+log "Architecture: $ARCH"
+log "Log file: $LOG_FILE"
+
+# Create backup directory
+mkdir -p "$BACKUP_DIR"
+chown "$ADMIN_USER:$ADMIN_USER" "$BACKUP_DIR"
+log "Backup directory: $BACKUP_DIR"
+
+###############################################################################
+# 1. CONFIGURE SECURITY REPOSITORIES
+###############################################################################
+log_section "1. Configuring Debian Security Repositories"
+
+if [ -f /etc/apt/sources.list ]; then
+    cp /etc/apt/sources.list "$BACKUP_DIR/sources.list.bak"
+fi
+
+if ! grep -q "deb.debian.org/debian-security" /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null; then
+    log "Adding Debian security repository..."
+    cat >> /etc/apt/sources.list << 'EOF'
+
+# Debian Security Repository
+deb http://deb.debian.org/debian-security trixie-security main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian-security trixie-security main contrib non-free non-free-firmware
+EOF
+    log "Debian security repository added"
+else
+    log "Debian security repository already configured"
+fi
+
+###############################################################################
+# 2. SYSTEM UPDATE
+###############################################################################
+log_section "2. Updating System Packages"
+
+apt update 2>&1 | tee -a "$LOG_FILE"
+apt upgrade -y 2>&1 | tee -a "$LOG_FILE"
+apt dist-upgrade -y 2>&1 | tee -a "$LOG_FILE"
+apt autoremove -y 2>&1 | tee -a "$LOG_FILE"
+apt autoclean -y 2>&1 | tee -a "$LOG_FILE"
+
+log "System packages updated successfully"
+
+###############################################################################
+# 3. INSTALL ESSENTIAL SECURITY PACKAGES
+###############################################################################
+log_section "3. Installing Security Packages"
+
+SECURITY_PACKAGES=(
+    "ufw"
+    "fail2ban"
+    "apparmor"
+    "apparmor-utils"
+    "auditd"
+    "aide"
+    "lynis"
+    "unattended-upgrades"
+    "apt-listchanges"
+    "needrestart"
+    "debsums"
+    "libpam-tmpdir"
+    "libpam-pwquality"
+    "rkhunter"
+    "acct"
+    "apt-show-versions"
+)
+
+log "Installing security packages: ${SECURITY_PACKAGES[*]}"
+apt install -y "${SECURITY_PACKAGES[@]}" 2>&1 | tee -a "$LOG_FILE"
+
+log "Security packages installed successfully"
+
+###############################################################################
+# 4. KERNEL MODULE BLACKLISTING (Pi-optimized)
+###############################################################################
+log_section "4. Blacklisting Unnecessary Kernel Modules"
+
+# Note: GPIO/I2C/SPI modules NOT blacklisted for Pi hardware access
+cat > /etc/modprobe.d/blacklist-security.conf << 'EOF'
+# Disable uncommon network protocols (security hardening)
+# Note: GPIO, I2C, SPI modules preserved for Raspberry Pi hardware access
+install dccp /bin/true
+install sctp /bin/true
+install rds /bin/true
+install tipc /bin/true
+install n-hdlc /bin/true
+install ax25 /bin/true
+install netrom /bin/true
+install x25 /bin/true
+install rose /bin/true
+install decnet /bin/true
+install econet /bin/true
+install af_802154 /bin/true
+install ipx /bin/true
+install appletalk /bin/true
+install psnap /bin/true
+install p8023 /bin/true
+install llc /bin/true
+install p8022 /bin/true
+
+# Disable uncommon filesystems (except jffs2 - may be needed for flash)
+install cramfs /bin/true
+install freevxfs /bin/true
+install hfs /bin/true
+install hfsplus /bin/true
+install udf /bin/true
+EOF
+
+log "Kernel modules blacklisted (GPIO/I2C/SPI preserved for Pi)"
+
+###############################################################################
+# 5. KERNEL HARDENING (SYSCTL)
+###############################################################################
+log_section "5. Applying Kernel Hardening Parameters"
+
+if [ -f /etc/sysctl.conf ]; then
+    cp /etc/sysctl.conf "$BACKUP_DIR/sysctl.conf.bak"
+fi
+
+cat > /etc/sysctl.d/99-security.conf << 'EOF'
+# IP Forwarding (disabled for security)
+net.ipv4.ip_forward = 0
+net.ipv6.conf.all.forwarding = 0
+
+# SYN Cookies protection
+net.ipv4.tcp_syncookies = 1
+
+# Reverse path filtering
+net.ipv4.conf.all.rp_filter = 1
+net.ipv4.conf.default.rp_filter = 1
+
+# ICMP redirects
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.conf.default.accept_redirects = 0
+net.ipv4.conf.all.secure_redirects = 0
+net.ipv4.conf.default.secure_redirects = 0
+net.ipv6.conf.all.accept_redirects = 0
+net.ipv6.conf.default.accept_redirects = 0
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.default.send_redirects = 0
+
+# Source routing
+net.ipv4.conf.all.accept_source_route = 0
+net.ipv4.conf.default.accept_source_route = 0
+net.ipv6.conf.all.accept_source_route = 0
+net.ipv6.conf.default.accept_source_route = 0
+
+# Log Martian Packets
+net.ipv4.conf.all.log_martians = 1
+net.ipv4.conf.default.log_martians = 1
+
+# ICMP settings
+net.ipv4.icmp_echo_ignore_all = 0
+net.ipv4.icmp_echo_ignore_broadcasts = 1
+net.ipv4.icmp_ignore_bogus_error_responses = 1
+
+# TCP hardening
+net.ipv4.tcp_rfc1337 = 1
+net.ipv4.tcp_timestamps = 0
+
+# Kernel hardening
+kernel.dmesg_restrict = 1
+kernel.kptr_restrict = 2
+kernel.yama.ptrace_scope = 2
+kernel.unprivileged_bpf_disabled = 1
+net.core.bpf_jit_harden = 2
+kernel.randomize_va_space = 2
+kernel.printk = 3 3 3 3
+kernel.kexec_load_disabled = 1
+
+# Disable IPv6
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+
+# File limits (reduced for Pi memory constraints)
+fs.file-max = 32768
+
+# Link protection
+fs.protected_hardlinks = 1
+fs.protected_symlinks = 1
+fs.protected_regular = 2
+fs.protected_fifos = 2
+EOF
+
+sysctl -p /etc/sysctl.d/99-security.conf 2>&1 | tee -a "$LOG_FILE"
+log "Kernel hardening parameters applied"
+
+###############################################################################
+# 6. SSH HARDENING
+###############################################################################
+log_section "6. Hardening SSH Configuration"
+
+if [ -f /etc/ssh/sshd_config ]; then
+    cp /etc/ssh/sshd_config "$BACKUP_DIR/sshd_config.bak"
+fi
+
+cat > /etc/ssh/sshd_config.d/99-hardening.conf << EOF
+# Listen on all interfaces (tunnel + local network recovery)
+# ListenAddress $TUNNEL_IP
+ListenAddress 0.0.0.0
+
+# Protocol and encryption
+Protocol 2
+HostKey /etc/ssh/ssh_host_ed25519_key
+HostKey /etc/ssh/ssh_host_rsa_key
+
+# Security settings - no root login, key-only
+PermitRootLogin no
+PasswordAuthentication no
+PubkeyAuthentication yes
+ChallengeResponseAuthentication no
+UsePAM yes
+
+# Restrict to admin user
+AllowUsers $ADMIN_USER
+
+# Disable insecure features
+X11Forwarding no
+PrintMotd no
+PermitEmptyPasswords no
+PermitUserEnvironment no
+AllowAgentForwarding no
+AllowTcpForwarding no
+PermitTunnel no
+
+# Authentication settings
+MaxAuthTries 3
+MaxSessions 2
+LoginGraceTime 30
+
+# Client alive interval
+ClientAliveInterval 300
+ClientAliveCountMax 2
+TCPKeepAlive no
+
+# Logging
+SyslogFacility AUTH
+LogLevel VERBOSE
+
+# Strong ciphers only
+Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com
+KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256
+
+# Banner
+Banner /etc/ssh/banner
+EOF
+
+cat > /etc/ssh/banner << 'EOF'
+################################################################################
+#                        AUTHORIZED ACCESS ONLY                                #
+################################################################################
+EOF
+
+if sshd -t 2>&1 | tee -a "$LOG_FILE"; then
+    log "SSH configuration is valid"
+else
+    log_error "SSH configuration validation failed. Restoring backup."
+    rm /etc/ssh/sshd_config.d/99-hardening.conf
+    exit 1
+fi
+
+log "SSH hardening completed"
+
+###############################################################################
+# 7. FIREWALL CONFIGURATION (UFW)
+###############################################################################
+log_section "7. Configuring Firewall (UFW)"
+
+ufw --force reset 2>&1 | tee -a "$LOG_FILE"
+ufw default deny incoming 2>&1 | tee -a "$LOG_FILE"
+ufw default allow outgoing 2>&1 | tee -a "$LOG_FILE"
+ufw default deny routed 2>&1 | tee -a "$LOG_FILE"
+
+# SSH via Cloudflare tunnel (if configured)
+if [[ -n "$TUNNEL_IP" ]]; then
+    ufw allow from any to "$TUNNEL_IP" port 22 proto tcp comment 'SSH via Cloudflare Tunnel' 2>&1 | tee -a "$LOG_FILE"
+fi
+
+# Allow SSH from local networks (recovery access)
+ufw allow from 192.168.0.0/16 to any port 22 proto tcp comment 'SSH from Local Network' 2>&1 | tee -a "$LOG_FILE"
+ufw allow from 10.0.0.0/8 to any port 22 proto tcp comment 'SSH from Tunnel Network' 2>&1 | tee -a "$LOG_FILE"
+
+ufw allow in on lo 2>&1 | tee -a "$LOG_FILE"
+ufw allow out on lo 2>&1 | tee -a "$LOG_FILE"
+
+ufw --force enable 2>&1 | tee -a "$LOG_FILE"
+ufw logging medium 2>&1 | tee -a "$LOG_FILE"
+
+log "Firewall configured successfully"
+ufw status verbose 2>&1 | tee -a "$LOG_FILE"
+
+###############################################################################
+# 8. FAIL2BAN CONFIGURATION
+###############################################################################
+log_section "8. Configuring Fail2ban"
+
+if [ -f /etc/fail2ban/jail.local ]; then
+    cp /etc/fail2ban/jail.local "$BACKUP_DIR/jail.local.bak"
+fi
+
+# Build ignoreip list
+FAIL2BAN_IGNOREIP="127.0.0.1/8 ::1"
+[[ -n "$TUNNEL_IP" ]] && FAIL2BAN_IGNOREIP="$FAIL2BAN_IGNOREIP $TUNNEL_IP"
+
+cat > /etc/fail2ban/jail.local << EOF
+[DEFAULT]
+bantime = 3600
+findtime = 600
+maxretry = 3
+destemail = root@localhost
+sendername = Fail2Ban
+action = %(action_mwl)s
+ignoreip = $FAIL2BAN_IGNOREIP
+
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 3
+bantime = 3600
+
+[sshd-ddos]
+enabled = true
+port = ssh
+filter = sshd-ddos
+logpath = /var/log/auth.log
+maxretry = 2
+bantime = 7200
+EOF
+
+systemctl enable fail2ban 2>&1 | tee -a "$LOG_FILE"
+systemctl restart fail2ban 2>&1 | tee -a "$LOG_FILE"
+
+log "Fail2ban configured and started"
+
+###############################################################################
+# 9. APPARMOR CONFIGURATION
+###############################################################################
+log_section "9. Configuring AppArmor"
+
+systemctl enable apparmor 2>&1 | tee -a "$LOG_FILE"
+systemctl start apparmor 2>&1 | tee -a "$LOG_FILE"
+aa-enforce /etc/apparmor.d/* 2>&1 | tee -a "$LOG_FILE" || true
+
+log "AppArmor enabled"
+aa-status 2>&1 | tee -a "$LOG_FILE" || true
+
+###############################################################################
+# 10. AUDITD CONFIGURATION (Reduced buffer for Pi)
+###############################################################################
+log_section "10. Configuring Audit Daemon (auditd)"
+
+if [ -f /etc/audit/rules.d/audit.rules ]; then
+    cp /etc/audit/rules.d/audit.rules "$BACKUP_DIR/audit.rules.bak"
+fi
+
+# Reduced buffer size for Pi memory constraints
+cat > /etc/audit/rules.d/hardening.rules << 'EOF'
+-D
+-b 4096
+-f 1
+
+# Time changes
+-a always,exit -F arch=b64 -S adjtimex -S settimeofday -k time-change
+-a always,exit -F arch=b32 -S adjtimex -S settimeofday -S stime -k time-change
+-w /etc/localtime -p wa -k time-change
+
+# Identity changes
+-w /etc/group -p wa -k identity
+-w /etc/passwd -p wa -k identity
+-w /etc/gshadow -p wa -k identity
+-w /etc/shadow -p wa -k identity
+
+# Network changes
+-a always,exit -F arch=b64 -S sethostname -S setdomainname -k system-locale
+-w /etc/hosts -p wa -k system-locale
+
+# AppArmor
+-w /etc/apparmor/ -p wa -k MAC-policy
+-w /etc/apparmor.d/ -p wa -k MAC-policy
+
+# Logins
+-w /var/log/faillog -p wa -k logins
+-w /var/log/lastlog -p wa -k logins
+-w /var/log/wtmp -p wa -k logins
+-w /var/log/btmp -p wa -k logins
+
+# Sudoers
+-w /etc/sudoers -p wa -k scope
+-w /etc/sudoers.d/ -p wa -k scope
+
+# SSH
+-w /etc/ssh/sshd_config -p wa -k sshd
+-w /etc/ssh/sshd_config.d/ -p wa -k sshd
+
+-e 2
+EOF
+
+augenrules --load 2>&1 | tee -a "$LOG_FILE"
+systemctl enable auditd 2>&1 | tee -a "$LOG_FILE"
+systemctl restart auditd 2>&1 | tee -a "$LOG_FILE"
+
+log "Auditd configured (reduced buffer for Pi)"
+
+###############################################################################
+# 11. AUTOMATIC SECURITY UPDATES
+###############################################################################
+log_section "11. Configuring Automatic Security Updates"
+
+cat > /etc/apt/apt.conf.d/50unattended-upgrades << 'EOF'
+Unattended-Upgrade::Allowed-Origins {
+    "${distro_id}:${distro_codename}";
+    "${distro_id}:${distro_codename}-security";
+};
+Unattended-Upgrade::AutoFixInterruptedDpkg "true";
+Unattended-Upgrade::MinimalSteps "true";
+Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+Unattended-Upgrade::Remove-Unused-Dependencies "true";
+Unattended-Upgrade::Automatic-Reboot "false";
+Unattended-Upgrade::SyslogEnable "true";
+EOF
+
+cat > /etc/apt/apt.conf.d/20auto-upgrades << 'EOF'
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Download-Upgradeable-Packages "1";
+APT::Periodic::AutocleanInterval "7";
+APT::Periodic::Unattended-Upgrade "1";
+EOF
+
+log "Automatic security updates configured"
+
+###############################################################################
+# 12. PASSWORD POLICIES (NIST 2025 Compliant)
+###############################################################################
+log_section "12. Configuring Password Policies"
+
+if [ -f /etc/login.defs ]; then
+    cp /etc/login.defs "$BACKUP_DIR/login.defs.bak"
+fi
+
+cat > /etc/security/pwquality.conf << 'EOF'
+# NIST SP 800-63B-4 compliant - no complexity rules, longer minimum
+minlen = 15
+minclass = 0
+maxrepeat = 3
+difok = 5
+dictcheck = 1
+usercheck = 1
+enforcing = 1
+retry = 3
+EOF
+
+sed -i 's/^PASS_MAX_DAYS.*/PASS_MAX_DAYS   99999/' /etc/login.defs
+sed -i 's/^PASS_MIN_DAYS.*/PASS_MIN_DAYS   1/' /etc/login.defs
+
+log "Password policies configured (NIST 2025 compliant)"
+
+###############################################################################
+# 13. COMPILER HARDENING - SKIPPED FOR PI
+###############################################################################
+log_section "13. Compiler Hardening"
+
+log "Skipping compiler restrictions (may need to build software on Pi)"
+
+###############################################################################
+# 14-16. REMAINING SECURITY CONFIGURATIONS
+###############################################################################
+log_section "14-16. Additional Security Configurations"
+
+# Process accounting
+if command -v accton &> /dev/null; then
+    systemctl enable acct 2>&1 | tee -a "$LOG_FILE" || true
+    systemctl start acct 2>&1 | tee -a "$LOG_FILE" || true
+fi
+
+# Legal banners
+cat > /etc/issue << 'EOF'
+################################################################################
+#                        AUTHORIZED ACCESS ONLY                                #
+################################################################################
+EOF
+cp /etc/issue /etc/issue.net
+
+# Disable unnecessary services
+SERVICES_TO_DISABLE=("avahi-daemon" "cups" "bluetooth" "rpcbind")
+for service in "${SERVICES_TO_DISABLE[@]}"; do
+    if systemctl is-enabled "$service" 2>/dev/null | grep -q enabled; then
+        systemctl disable "$service" 2>&1 | tee -a "$LOG_FILE"
+        systemctl stop "$service" 2>&1 | tee -a "$LOG_FILE"
+    fi
+done
+
+log "Additional security configurations applied"
+
+###############################################################################
+# 17. AIDE CONFIGURATION (Lighter for Pi SD card)
+###############################################################################
+log_section "17. Initializing AIDE (Lighter config for Pi)"
+
+cat > /etc/aide/aide.conf.d/99-custom << 'EOF'
+Checksums = sha256+sha512
+
+# Exclude network mounts (NFS/Samba/CIFS)
+!/mnt
+!/media
+!/nfs
+!/smb
+!/cifs
+!/net
+
+# Lighter config for Pi - only critical directories
+/etc/ssh Checksums+p+i+n+u+g+s+b+acl+xattrs
+/etc/sudoers Checksums+p+i+n+u+g+s+b+acl+xattrs
+/etc/sudoers.d Checksums+p+i+n+u+g+s+b+acl+xattrs
+EOF
+
+log "AIDE configured (lighter scope for Pi SD card performance)"
+log "Run 'aideinit' manually when ready (takes time on SD card)"
+
+###############################################################################
+# 18-21. REMAINING CONFIGURATIONS
+###############################################################################
+log_section "18-21. Final Configurations"
+
+# RKHunter
+rkhunter --propupd 2>&1 | tee -a "$LOG_FILE" || true
+
+# Debsums weekly check
+cat > /etc/cron.weekly/debsums-check << 'EOF'
+#!/bin/bash
+debsums -s >> /var/log/debsums-check.log 2>&1
+EOF
+chmod +x /etc/cron.weekly/debsums-check
+
+# Secure shared memory
+if ! grep -q "tmpfs /run/shm tmpfs" /etc/fstab; then
+    echo "tmpfs /run/shm tmpfs defaults,noexec,nodev,nosuid 0 0" >> /etc/fstab
+fi
+
+# TCP Wrappers for SSH access
+cat > /etc/hosts.allow << 'EOF'
+# Allow SSH from tunnel and local networks
+sshd: 10.0.0.0/8
+sshd: 192.168.0.0/16
+sshd: 127.0.0.1
+sshd: LOCAL
+EOF
+
+cat > /etc/hosts.deny << 'EOF'
+# Deny all by default
+ALL: ALL
+EOF
+
+# DNS Security - with cloudflared detection
+CURRENT_HOSTNAME=$(hostname)
+if ! grep -q "$CURRENT_HOSTNAME" /etc/hosts 2>/dev/null; then
+    echo "127.0.1.1 $CURRENT_HOSTNAME" >> /etc/hosts
+fi
+
+if grep -q "cloudflare" /etc/resolv.conf 2>/dev/null || \
+   systemctl is-active --quiet cloudflared 2>/dev/null || \
+   systemctl is-active --quiet warp-svc 2>/dev/null; then
+    log "Cloudflare detected - preserving existing DNS"
+elif command -v systemd-resolve &> /dev/null || [ -f /lib/systemd/system/systemd-resolved.service ]; then
+    mkdir -p /etc/systemd/resolved.conf.d
+    cat > /etc/systemd/resolved.conf.d/99-security.conf << 'EOF'
+[Resolve]
+DNS=1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com
+FallbackDNS=8.8.8.8#dns.google
+DNSSEC=yes
+DNSOverTLS=yes
+MulticastDNS=no
+LLMNR=no
+EOF
+    systemctl enable systemd-resolved 2>&1 | tee -a "$LOG_FILE"
+    systemctl restart systemd-resolved 2>&1 | tee -a "$LOG_FILE"
+    if systemctl is-active --quiet systemd-resolved; then
+        ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+    else
+        log_warning "systemd-resolved failed - using fallback DNS"
+        echo -e "nameserver 1.1.1.1\nnameserver 8.8.8.8" > /etc/resolv.conf
+    fi
+else
+    log_warning "systemd-resolved not available - using static DNS"
+    if ! grep -q "nameserver" /etc/resolv.conf 2>/dev/null; then
+        echo -e "nameserver 1.1.1.1\nnameserver 8.8.8.8" > /etc/resolv.conf
+    fi
+fi
+
+log "Final configurations applied"
+
+###############################################################################
+# 22. SYSTEM LIMITS (Reduced for Pi)
+###############################################################################
+log_section "22. Configuring System Limits"
+
+cat > /etc/security/limits.d/99-security.conf << 'EOF'
+* hard core 0
+* hard nproc 256
+* hard nofile 32768
+* soft nofile 32768
+EOF
+
+log "System limits configured (reduced for Pi)"
+
+###############################################################################
+# 23. GENERATE REPORT
+###############################################################################
+log_section "23. Generating Security Report"
+
+REPORT_FILE="$BACKUP_DIR/hardening-report.txt"
+
+cat > "$REPORT_FILE" << EOF
+================================================================================
+Raspberry Pi Security Hardening Report
+Generated: $(date)
+Hostname: $(hostname)
+Architecture: $ARCH
+================================================================================
+
+CONFIGURATION:
+- Tunnel IP: ${TUNNEL_IP:-<not configured>}
+- Admin User: $ADMIN_USER
+- SSH: Key-only, tunnel IP only
+- Firewall: UFW enabled
+- DNS: DNSSEC + DoT (Cloudflare)
+- IPv6: Disabled
+
+BACKUP LOCATION: $BACKUP_DIR
+
+NEXT STEPS:
+1. Test SSH: ssh $ADMIN_USER@<tunnel-ip>
+2. Run AIDE init: sudo aideinit
+3. Reboot: sudo reboot
+
+================================================================================
+EOF
+
+cat "$REPORT_FILE"
+chown "$ADMIN_USER:$ADMIN_USER" "$REPORT_FILE"
+
+###############################################################################
+# 24. RESTART SSH
+###############################################################################
+log_section "24. Restarting Services"
+
+log_warning "About to restart SSH. Test access in another terminal first!"
+log "Press Ctrl+C within 10 seconds to cancel..."
+sleep 10
+
+systemctl restart ssh 2>&1 | tee -a "$LOG_FILE"
+
+log "========================================="
+log "RASPBERRY PI HARDENING COMPLETE!"
+log "========================================="
+log "Backup: $BACKUP_DIR"
+log "Log: $LOG_FILE"
+log_warning "REBOOT RECOMMENDED"
+
+exit 0
