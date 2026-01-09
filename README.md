@@ -51,11 +51,6 @@ If any of these guides saved you time or solved your problem, a star would be ap
 ---
 
 ## 📜 License
-
-MIT License.
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ---
-
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)   
-
-
