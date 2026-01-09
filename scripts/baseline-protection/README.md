@@ -13,7 +13,7 @@ SSH configuration changes can lock you out if misconfigured.
 
 | Script                         | Architecture    | Use Case                             |
 | ------------------------------ | --------------- | ------------------------------------ |
-| `[View script](scripts/baseline-protection/baseline-protection-arm64)` | ARM64 (aarch64) | Raspberry Pi 4, ARM servers          |
+| `baseline-protection-arm64` | ARM64 (aarch64) | Raspberry Pi 4, ARM servers          |
 | `baseline-protection-x86_64`   | x86_64          | Standard servers, VPS, media servers |
 
 ## Features
