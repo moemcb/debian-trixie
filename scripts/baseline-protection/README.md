@@ -7,7 +7,9 @@ Based on CIS Benchmarks and NIST SP 800-63B-4 (2025) guidelines.
 ## Warning
 
 **Always ensure you have console/physical access before running these scripts.** 
+
 SSH configuration changes can lock you out if misconfigured.
+
 
 ## Scripts
 
@@ -15,6 +17,7 @@ SSH configuration changes can lock you out if misconfigured.
 | ------------------------------ | --------------- | ------------------------------------ |
 | `baseline-protection-arm64` | ARM64 (aarch64) | Raspberry Pi 4, ARM servers          |
 | `baseline-protection-x86_64`   | x86_64          | Standard servers, VPS, media servers |
+| `baseline-protection-ionos`   | VPS          | IONOS Debian Trixie VPS |
 
 ## Features
 
