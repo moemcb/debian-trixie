@@ -33,10 +33,10 @@ SSH configuration changes can lock you out if misconfigured.
 ### ARM64 (Raspberry Pi)
 
 ```bash
-sudo ./server-harden-basic-arm64.sh [TUNNEL_IP] [USERNAME]
+sudo ./baseline-protection-arm64 [TUNNEL_IP] [USERNAME]
 
 # Examples:
-sudo ./server-harden-basic-arm64.sh 10.0.0.5 pi
+sudo ./baseline-protection-arm64 10.0.0.1 pi
 ```
 
 ### x86_64 (Standard Server)
@@ -45,8 +45,8 @@ sudo ./server-harden-basic-arm64.sh 10.0.0.5 pi
 sudo ./server-harden-basic-x64.sh [TUNNEL_IP] [USERNAME] [LOCAL_NETWORK]
 
 # Examples:
-sudo ./server-harden-basic-x64.sh 10.0.0.1 admin
-sudo ./server-harden-basic-x64.sh 10.0.0.1 user 192.168.1.0/24
+sudo ./baseline-protection-x86_64 10.0.0.1 admin
+sudo ./baseline-protection-x86_64 10.0.0.1 user 192.168.1.0/24
 ```
 
 ### Parameters
