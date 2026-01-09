@@ -44,14 +44,16 @@ Please open an issue or PR - I appreciate the learning opportunity!
 
 If any of these guides saved you time or solved your problem, a star would be appreciated! It lets me know these notes are useful to others too.
 
+### 🚀 Happy tinkering with Debian Trixie!
+
+*Remember: Breaking things is just another opportunity to learn how to fix them.*
+
 ---
 
 ## 📜 License
 
-MIT License - see LICENSE.md.
+MIT License.
 
 ---
 
-### 🚀 Happy tinkering with Debian Trixie!
 
-*Remember: Breaking things is just another opportunity to learn how to fix them.*

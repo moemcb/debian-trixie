@@ -47,3 +47,10 @@ Most scripts are intended to be run directly:
 chmod +x script.sh
 ./script.sh
 ```
+---
+
+## 📜 License
+
+MIT License.
+
+---
