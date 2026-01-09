@@ -1,4 +1,4 @@
-# Debian 13 (Trixie) Server Hardening Scripts [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+# Debian 13 (Trixie) Baseline Protection Scripts [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Comprehensive security hardening scripts for Debian 13 Trixie servers.
 
@@ -72,7 +72,7 @@ sudo ./baseline-protection-ionos 10.0.0.1
 | --------------- | ---------------------------- | --------------------------------------- |
 | `TUNNEL_IP`     | *optional*                   | Cloudflare tunnel IP (skip if not used) |
 | `USERNAME`      | `$SUDO_USER` or `pi`/`admin` | Non-root user for SSH access            |
-| `LOCAL_NETWORK` | `192.168.0.0/24`             | Local network CIDR (x64 only)           |
+| `LOCAL_NETWORK` | `192.168.1.0/24`             | Local network CIDR (x64 only)           |
 
 ## What Gets Configured
 
