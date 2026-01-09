@@ -6,12 +6,12 @@
 # NOTE: AMD64 architecture (x86_64) - suitable for media/general servers
 #
 # Usage: sudo ./vps-harden-core-generic.sh [TUNNEL_IP] [USERNAME] [LOCAL_NETWORK]
-# Example: sudo ./vps-harden-core-generic.sh 10.0.0.101 admin 192.168.1.0/24
+# Example: sudo ./vps-harden-core-generic.sh 10.0.0.1 admin 192.168.1.0/24
 #
 # Parameters:
 #   TUNNEL_IP     - Cloudflare tunnel IP (optional - skip for non-tunnel setups)
 #   USERNAME      - Non-root user for SSH access (default: current sudo user)
-#   LOCAL_NETWORK - Local network CIDR for SSH access (default: 192.168.0.0/24)
+#   LOCAL_NETWORK - Local network CIDR for SSH access (default: 192.168.1.0/24)
 #
 # This script should be run with root privileges
 #

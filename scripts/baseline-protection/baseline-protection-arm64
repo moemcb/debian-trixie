@@ -6,7 +6,7 @@
 # NOTE: ARM64 architecture (aarch64) - optimized for Pi 4 resource constraints
 #
 # Usage: sudo ./vps-harden-pi-generic.sh [TUNNEL_IP] [USERNAME]
-# Example: sudo ./vps-harden-pi-generic.sh 10.0.0.5 pi
+# Example: sudo ./vps-harden-pi-generic.sh 10.0.0.1 pi
 #
 # Parameters:
 #   TUNNEL_IP - Cloudflare tunnel IP (optional - skip for non-tunnel setups)
