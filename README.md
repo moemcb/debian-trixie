@@ -1,6 +1,6 @@
 # 🐧 My Debian Trixie Solutions
 
-A personal collection of guides and fixes I've documented while working with **Debian 13 (Trixie)**.
+A personal collection of guides and fixes I've documented while working with **Debian 13 (Trixie)**. [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ---
 
