@@ -19,6 +19,7 @@
 # WARNING: The script will restart SSH - ensure you can access via console!
 ###############################################################################
 
+
 set -e  # Exit on error
 set -u  # Exit on undefined variable
 
