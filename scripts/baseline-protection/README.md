@@ -26,7 +26,12 @@ SSH configuration changes can lock you out if misconfigured.
 - **File Integrity** - AIDE monitoring, debsums verification
 - **Automatic Updates** - Unattended security upgrades
 
+## Requirements
 
+- Debian 13 (Trixie)
+- Root access
+- SSH key already configured for the admin user
+- Internet connection (for package installation)
 
 ## Usage
 
@@ -158,11 +163,3 @@ Includes:
 - [CIS Debian Linux Benchmark](https://www.cisecurity.org/benchmark/debian_linux)
 - [NIST SP 800-63B-4](https://pages.nist.gov/800-63-4/) (Digital Identity Guidelines)
 - [NIST SP 800-123](https://csrc.nist.gov/publications/detail/sp/800-123/final) (Server Security)
-
-## Requirements
-
-- Debian 13 (Trixie)
-- Root access
-- SSH key already configured for the admin user
-- Internet connection (for package installation)
-
