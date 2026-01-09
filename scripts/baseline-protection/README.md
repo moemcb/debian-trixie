@@ -1,8 +1,13 @@
-# Debian 13 (Trixie) Server Hardening Scripts
+# Debian 13 (Trixie) Server Hardening Scripts [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Comprehensive security hardening scripts for Debian 13 Trixie servers.
 
 Based on CIS Benchmarks and NIST SP 800-63B-4 (2025) guidelines.
+
+## Warning
+
+**Always ensure you have console/physical access before running these scripts.** 
+SSH configuration changes can lock you out if misconfigured.
 
 ## Scripts
 
@@ -161,10 +166,3 @@ Includes:
 - SSH key already configured for the admin user
 - Internet connection (for package installation)
 
-## License
-
-MIT License - **Use at your own risk**. Always test on non-production systems first.
-
-## Warning
-
-**Always ensure you have console/physical access before running these scripts.** SSH configuration changes can lock you out if misconfigured.

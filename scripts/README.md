@@ -1,4 +1,4 @@
-# Utility Scripts Collection
+# Utility Scripts Collection [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A growing collection of small, focused scripts for Linux systems administration,
 automation, and tooling.
@@ -47,10 +47,3 @@ Most scripts are intended to be run directly:
 chmod +x script.sh
 ./script.sh
 ```
----
-
-## 📜 License
-
-MIT License.
-
----

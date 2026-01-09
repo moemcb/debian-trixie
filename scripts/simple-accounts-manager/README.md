@@ -1,4 +1,4 @@
-# acctmgr - Lightweight Secure Account Manager
+# acctmgr - Lightweight Secure Account Manager [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A portable, encrypted account manager that runs from SD card. Single binary, no runtime dependencies.
 

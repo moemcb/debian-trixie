@@ -47,10 +47,3 @@ If any of these guides saved you time or solved your problem, a star would be ap
 ### 🚀 Happy tinkering with Debian Trixie!
 
 *Remember: Breaking things is just another opportunity to learn how to fix them.*
-
----
-
-## 📜 License
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
----

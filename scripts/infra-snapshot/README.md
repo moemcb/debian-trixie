@@ -1,4 +1,4 @@
-# infra-snapshot
+# infra-snapshot [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A lightweight infrastructure snapshot tool that captures system state in JSON or Markdown format.
 
@@ -157,8 +157,3 @@ Persistent=true
 [Install]
 WantedBy=timers.target
 ```
----
-
-## 📜 License
-
-MIT License - Use anything here however it helps you.
