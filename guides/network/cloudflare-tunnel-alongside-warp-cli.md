@@ -137,7 +137,9 @@ NFTABLES
 
 logger -t cloudflared-warp-bypass "Bypass rules applied successfully"
 echo "Cloudflared WARP bypass rules active"
-
+EOF
+```
+```bash
 sudo chmod +x /usr/local/bin/cloudflared-warp-bypass.sh
 ```
 
