@@ -56,7 +56,7 @@ cat > ~/.local/bin/start-keyring-unlocked.sh << 'EOF'
 #!/bin/bash
 # Start gnome-keyring-daemon unlocked using LUKS-derived password
 
-KEYFILE="/mnt/key/home.key"  # <-- CHANGE THIS to your keyfile path
+KEYFILE="/path/to/luks.key"  # <-- CHANGE THIS to your keyfile path
 COMPONENT="${1:-secrets}"
 
 if [ -f "$KEYFILE" ]; then
@@ -207,21 +207,21 @@ secret-tool search --all xdg:schema chrome_libsecret_os_crypt_password_v2
 
 ## Security Considerations
 
-| Aspect | Note |
-|--------|------|
-| Password derivation | SHA256 of first 256 bytes of keyfile |
-| Security level | Same as your LUKS encryption |
-| Key compromise | If LUKS keyfile leaks, keyring is also compromised |
-| Deterministic | Same keyfile always produces same keyring password |
+| Aspect              | Note                                               |
+| ------------------- | -------------------------------------------------- |
+| Password derivation | SHA256 of first 256 bytes of keyfile               |
+| Security level      | Same as your LUKS encryption                       |
+| Key compromise      | If LUKS keyfile leaks, keyring is also compromised |
+| Deterministic       | Same keyfile always produces same keyring password |
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `~/.local/bin/start-keyring-unlocked.sh` | Unlock script |
+| File                                                | Purpose            |
+| --------------------------------------------------- | ------------------ |
+| `~/.local/bin/start-keyring-unlocked.sh`            | Unlock script      |
 | `~/.config/autostart/gnome-keyring-secrets.desktop` | Autostart override |
-| `~/.local/share/keyrings/login.keyring` | Encrypted keyring |
-| `~/.local/share/keyrings/default` | Points to "login" |
+| `~/.local/share/keyrings/login.keyring`             | Encrypted keyring  |
+| `~/.local/share/keyrings/default`                   | Points to "login"  |
 
 ## Why Not PAM?
 
