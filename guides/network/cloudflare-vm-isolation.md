@@ -86,8 +86,6 @@ If the result is `greater than 0`, you are good to go.
 > **Disable shared folders unless needed, Avoid SPICE/VNC exposure**
 > **Keep QEMU updated (VM escapes are real)**
 
-
-
 **Enable IP Forwarding:**
 
 ```bash
@@ -95,8 +93,6 @@ sudo nano /etc/ufw/sysctl.conf
 ```
 
 > **Uncomment or Add:** `net/ipv4/ip_forward=1`
-
-
 
 **Apply and Verify:**
 
@@ -109,8 +105,6 @@ sudo sysctl net.ipv4.ip_forward
 
 > net.ipv4.ip_forward = 1
 
-
-
 **Change UFW Default Forwarding policy:**
 
 ```bash
@@ -121,17 +115,13 @@ sudo nano /etc/default/ufw
 > 
 > To `DEFAULT_FORWARD_POLICY="ACCEPT"`
 
-
-
 **Reload UFW**
 
 ```bash
 sudo ufw reload
 ```
 
-
-
-
+---
 
 ```bash
 sudo apt update
@@ -291,7 +281,7 @@ sudo ufw reload
 > 
 > If you plan to use non-standard image locations or NAS mounts
 > 
-> See this guide.
+> [See this guide](guides/desktop/libvirt-change-default-vm-location.md)
 
 ```bash
 # Create VM (headless, serial console)
