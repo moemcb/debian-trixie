@@ -281,7 +281,7 @@ sudo ufw reload
 > 
 > If you plan to use non-standard image locations or NAS mounts
 > 
-> [See this guide](guides/desktop/libvirt-change-default-vm-location.md)
+> [See this guide](../desktop/libvirt-change-default-vm-location.md)
 
 ```bash
 # Create VM (headless, serial console)
