@@ -63,7 +63,6 @@ If you already have VM disk images in the old location:
 
 ```bash
 sudo mv /var/lib/libvirt/images/*.qcow2 /home/user/vms/
-
 ```
 
 ---
