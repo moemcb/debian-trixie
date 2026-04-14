@@ -1,0 +1,27 @@
+#!/bin/bash
+# Derives keyring password from LUKS keyfile and unlocks gnome-keyring
+# Runs as the logged-in user via XDG autostart
+
+set -euo pipefail
+
+KEY_FILE="/mnt/key/home.key"
+
+# Wait up to 15s for keyfile (automount may need a moment)
+for i in $(seq 1 15); do
+    [[ -f "$KEY_FILE" ]] && break
+    sleep 1
+done
+
+if [[ ! -f "$KEY_FILE" ]]; then
+    logger -t unlock-keyring "Key file not found after 15s: $KEY_FILE"
+    exit 0
+fi
+
+# Derive password from keyfile
+KEY_HASH=$(sha256sum "$KEY_FILE" | awk '{print $1}')
+
+# Unlock the login keyring
+echo "$KEY_HASH" | gnome-keyring-daemon --replace --unlock > /dev/null 2>&1 || true
+
+logger -t unlock-keyring "Keyring unlocked for $USER"
+exit 0

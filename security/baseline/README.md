@@ -1,4 +1,4 @@
-# Debian 13 (Trixie) Baseline Protection Scripts [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+# Debian 13 Baseline Protection Scripts [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Comprehensive security hardening scripts for Debian 13 Trixie servers.
 
@@ -10,14 +10,13 @@ Based on CIS Benchmarks and NIST SP 800-63B-4 (2025) guidelines.
 
 SSH configuration changes can lock you out if misconfigured.
 
-
 ## Scripts
 
-| Script                         | Architecture    | Use Case                             |
-| ------------------------------ | --------------- | ------------------------------------ |
-| `baseline-protection-arm64` | ARM64 (aarch64) | Raspberry Pi 4, ARM servers          |
-| `baseline-protection-x86_64`   | x86_64          | Standard servers, VPS, media servers |
-| `baseline-protection-ionos`   | VPS          | IONOS Debian Trixie VPS Image |
+| Script                       | Architecture    | Use Case                             |
+| ---------------------------- | --------------- | ------------------------------------ |
+| `baseline-protection-arm64`  | ARM64 (aarch64) | Raspberry Pi 4, ARM servers          |
+| `baseline-protection-x86_64` | x86_64          | Standard servers, VPS, media servers |
+| `baseline-protection-ionos`  | VPS             | IONOS Debian Trixie VPS Image        |
 
 ## Features
 
@@ -128,8 +127,6 @@ sudo ./baseline-protection-ionos 10.0.0.1
 | File limit           | 32768              | 65535       |
 | AIDE scope           | Critical dirs only | Full system |
 | Compiler restriction | Skipped            | Optional    |
-
-
 
 ## Post-Installation
 

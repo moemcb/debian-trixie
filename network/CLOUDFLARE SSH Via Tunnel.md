@@ -1,4 +1,4 @@
-# Secure Shell Access via Cloudflare WARP - Debian 13 (Trixie)
+# Secure Shell Access via Tunnel
 
 ## Without Public or Private Hostnames
 

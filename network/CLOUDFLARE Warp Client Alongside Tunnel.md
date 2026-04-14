@@ -1,14 +1,10 @@
-# Setting Up WARP-CLI Alongside Cloudflared Tunnel
+# WARP Client Alongside Cloudflared Tunnel
 
 **OS:** Debian Trixie (13)
 
-
 **Prerequisite:** Cloudflared tunnel already installed and working as systemd service
 
-
 **Goal:** Add WARP-CLI for outbound SSH tunneling without breaking cloudflared
-
-
 
 ---
 
@@ -139,6 +135,7 @@ logger -t cloudflared-warp-bypass "Bypass rules applied successfully"
 echo "Cloudflared WARP bypass rules active"
 EOF
 ```
+
 ```bash
 sudo chmod +x /usr/local/bin/cloudflared-warp-bypass.sh
 ```
