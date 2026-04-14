@@ -158,25 +158,23 @@ virsh edit debian13
 
 Add inside `<devices>` tags if needed:
 
-> <console type='pty'>
-> 
->     <target type='serial' port='0'/> 
-> 
-> </console>  
+```txt
+<console type='pty'>
+     <target type='serial' port='0'/> 
+</console>  
+```
 
 And
 
-> <serial type='pty'>
-> 
->     <target port='0'/> 
-> 
-> </serial>
+```txt
+<serial type='pty'>
+    <target port='0'/>
+</serial>
+```
 
 Remove VNC Graphics for Headless Mode
 
 > <graphics type='vnc' ... />
-
-
 
 and any `<video>` sections if present.
 
@@ -203,8 +201,6 @@ You should now see:
 > Connected to domain `debain13`
 > 
 > Escape character is ^] (Ctrl + ])
-
-
 
 Hit enter too bump to the login
 
@@ -235,8 +231,6 @@ virsh console debian13
 Exit console:
 
 > CTRL + ]
-
-
 
 Additional Storage:
 
