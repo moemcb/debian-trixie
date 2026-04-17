@@ -235,8 +235,10 @@ Exit console:
 Additional Storage:
 
 ```bash
-virsh attach-device debian13 /path/to/storage.xml --config---
+virsh attach-device debian13 /path/to/storage.xml --config
 ```
+
+---
 
 Using **VNC only for installation** avoids common problems:
 
